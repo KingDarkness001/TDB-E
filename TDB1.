@@ -1,69 +1,4 @@
 if game.PlaceId == 6441847031 then
-    local OrionLib = loadstring(game:HttpGet('https://raw.githubusercontent.com/shlexware/Orion/main/source'))()
-    local Window = OrionLib:MakeWindow({
-        Name = "Admin Panel | TDB-E Team",
-        HidePremium = false,
-        IntroText = "Welcome to TDB-E Team Admin Panel",
-        SaveConfig = true,
-        ConfigFolder = "OrionTest"
-    })
-
-    local player = game.Players.LocalPlayer
-    local adminUserIds = {4513211336, 4513211336} -- Replace with actual admin User IDs
-
-    -- Function to check if the player is an admin
-    local function isAdmin()
-        for _, id in ipairs(adminUserIds) do
-            if player.UserId == id then
-                return true
-            end
-        end
-        return false
-    end
-
-    if isAdmin() then
-        -- Create the first tab
-        local HomeTab = Window:MakeTab({
-            Name = "Home",
-            Icon = "rbxassetid://4483345998",
-            PremiumOnly = false
-        })
-        
-        HomeTab:AddLabel("Welcome Home, Admin!")
-
-        -- Create the second tab
-        local KickTab = Window:MakeTab({
-            Name = "Kick Player",
-            Icon = "rbxassetid://4483345998",
-            PremiumOnly = false
-        })
-
-        -- Input box for player name to kick
-        local playerToKickName = ""
-
-        KickTab:TextBox("Enter Player Name", "Type the name of the player to kick", true, function(value)
-            playerToKickName = value
-        end)
-
-        -- Kick button
-        KickTab:AddButton({
-            Name = "Kick Player",
-            Callback = function()
-                local playerToKick = game.Players:FindFirstChild(playerToKickName)
-                if playerToKick then
-                    playerToKick:Kick("You have been kicked by an admin.")
-                    print(playerToKickName .. " has been kicked.")
-                else
-                    print("Player not found.")
-                end
-            end    
-        })
-    else
-        print("You do not have permission to use this script.")
-    end
-end
-
-if game.PlaceId == 6441847031 then
     local player = game.Players.LocalPlayer
 
     -- Normal player functionality
@@ -16148,6 +16083,7 @@ Callback = function()
   end    
 })
 
+
 local FarmTab = Window:MakeTab({
 Name = "Tab 2",
 Icon = "rbxassetid://4483345998",
@@ -16171,6 +16107,106 @@ Callback = function()
 
   end    
 })
+
+local player = game.Players.LocalPlayer
+    local adminUserIds = {661316734, 4513211336} -- Replace with actual admin User IDs
+
+    -- Function to check if the player is an admin
+    local function isAdmin()
+        for _, id in ipairs(adminUserIds) do
+            if player.UserId == id then
+                return true
+            end
+        end
+        return false
+    end
+
+    if isAdmin() then
+        -- Admin Panel
+        local AdminWindow = OrionLib:MakeWindow({
+            Name = "Admin Panel | TDB-E Team",
+            HidePremium = false,
+            IntroText = "Welcome to TDB-E Team Admin Panel",
+            SaveConfig = true,
+            ConfigFolder = "OrionTest"
+        })
+
+        -- Create the Home tab
+        local HomeTab = AdminWindow:MakeTab({
+            Name = "Home",
+            Icon = "rbxassetid://4483345998",
+            PremiumOnly = false
+        })
+
+        HomeTab:AddLabel("Welcome Home, Admin!")
+
+        -- Create the Kick Player tab
+        local FarmTab = AdminWindow:MakeTab({
+            Name = "Kick Player",
+            Icon = "rbxassetid://4483345998",
+            PremiumOnly = false
+        })
+
+        FarmTab:AddLabel("Kick Player")
+
+        -- Input box for player name to search
+        local playerToKickName = ""
+
+        FarmTab:AddTextbox({
+            Name = "Search Player",
+            Default = "Enter player name",
+            TextDisappear = true,
+            Callback = function(value)
+                playerToKickName = value
+            end  
+        })
+
+        -- Kick button
+        FarmTab:AddButton({
+            Name = "Kick Player",
+            Callback = function()
+                if playerToKickName and playerToKickName ~= "" then
+                    local playerToKick = game.Players:FindFirstChild(playerToKickName)
+                    if playerToKick then
+                        playerToKick:Kick("You have been kicked by an admin.")
+                        print(playerToKickName .. " has been kicked.")
+                    else
+                        print("Player not found.")
+                    end
+                else
+                    print("Please enter a player name.")
+                end
+            end    
+        })
+
+    else
+        -- Normal Player Functionality
+        Window:MakeNotification({
+            Name = "Welcome!",
+            Content = "Welcome, " .. player.Name .. "! You are a user of this script.",
+            Time = 5
+        })
+
+        -- Notify admins when a normal player opens the script
+        for _, id in ipairs(adminUserIds) do
+            local adminPlayer = game.Players:GetPlayerByUserId(id)
+            if adminPlayer then
+                adminPlayer:SendNotification({
+                    Title = "Normal Player Active",
+                    Text = player.Name .. " has opened the normal script.",
+                    Duration = 5
+                })
+            end
+        end
+
+        -- Additional normal player features can be added here
+        Window:MakeTab({
+            Name = "User Features",
+            Icon = "rbxassetid://4483345998",
+            PremiumOnly = false
+        }):AddLabel("Enjoy your time in the game!")
+
+    end
 
 local FarmTab = Window:MakeTab({
 Name = "Tab 3",
@@ -16328,6 +16364,7 @@ FarmTab:AddButton({
         end
     end    
 })
+
 
 
 
