@@ -1221,51 +1221,74 @@ noclipb.MouseButton1Click:Connect(function()
 	noclip = not noclip
 	noclipb.Text = "noclip" .. ((noclip and " (Enabled)") or "")
 end)
-local fakevoidb = makecharbutton("fake void")
+local fakevoidb = makecharbutton("fake void")  -- Assuming this is a custom function to create buttons.
+local lp = game.Players.LocalPlayer  -- Local player variable for reference (assuming you're using a LocalScript)
+local ws = game:GetService("Workspace")  -- Ensuring ws is properly set to the workspace
+
 fakevoidb.MouseButton1Click:Connect(function()
 	if fakevoidp then
+		-- Disable fake void functionality
 		fakevoidp = nil
 		fakevoidb.Text = "fake void"
 	else
 		local c = lp.Character
 		if not (c and c.Parent) then
-			notify("character not found")
+			notify("Character not found")
 			return
 		end
-		local part = gp(c, "HumanoidRootPart", "BasePart") or gp(c, "Torso", "BasePart") or gp(c, "UpperTorso", "BasePart") or gp(c, "Head", "BasePart") or c:FindFirstChildWhichIsA("BasePart")
+		
+		-- Search for a part in the character
+		local part = gp(c, "HumanoidRootPart", "BasePart") or
+		             gp(c, "Torso", "BasePart") or
+		             gp(c, "UpperTorso", "BasePart") or
+		             gp(c, "Head", "BasePart") or
+		             c:FindFirstChildWhichIsA("BasePart")
+
 		if not part then
-			notify("no part found")
+			notify("No part found")
 			return
 		end
+		
+		-- Enable fake void functionality
 		fakevoidp = part
 		fakevoidb.Text = "fake void (Enabled)"
-		notify("character teleported under FallenPartsDestroyHeight")
+		notify("Character teleported under FallenPartsDestroyHeight")
 
+		-- Variables to manage teleportation
 		local dh = ws.FallenPartsDestroyHeight
 		local cfr = fakevoidp.CFrame
-		local newcf = cf(0, dh - 150, 0)
+		local newcf = CFrame.new(0, dh - 150, 0)  -- Corrected creation of CFrame
 		local camcf = ws.CurrentCamera.CFrame
+
+		-- Change camera settings for teleportation
 		ws.CurrentCamera.CameraType = Enum.CameraType.Scriptable
 		ws.FallenPartsDestroyHeight = dh - 250
+
+		-- Start teleporting part under FallenPartsDestroyHeight
 		while stepped:Wait() and gui and c and c.Parent and fakevoidp and fakevoidp.Parent do
-			weldtp(fakevoidp, newcf)
+			weldtp(fakevoidp, newcf)  -- Assuming weldtp is a function to teleport the part
 		end
+
+		-- Restore previous settings after teleportation
 		ws.FallenPartsDestroyHeight = dh
 		fakevoidb.Text = "fake void"
+
+		-- Check if character still exists and restore camera
 		if c and c.Parent then
-			unview()
+			unview()  -- Assuming unview is a function to disable some camera effect
 			ws.CurrentCamera.CFrame = camcf
 			if part and part.Parent then
-				weldtp(part, cfr)
-				notify("teleported back")
+				weldtp(part, cfr)  -- Teleport part back to original position
+				notify("Teleported back")
 			else
-				notify("part removed")
+				notify("Part removed")
 			end
 		else
-			notify("character removed")
+			notify("Character removed")
 		end
 	end
 end)
+
 makecharbutton("block tool").MouseButton1Click:Connect(function()
 	local c = lp.Character
 	if c and c.Parent then
