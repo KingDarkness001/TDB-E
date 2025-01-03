@@ -1243,10 +1243,10 @@ fakevoidb.MouseButton1Click:Connect(function()
 
 		local dh = ws.FallenPartsDestroyHeight
 		local cfr = fakevoidp.CFrame
-		local newcf = cf(0, dh - 500, 0)
+		local newcf = cf(0, dh - 10000, 0)
 		local camcf = ws.CurrentCamera.CFrame
 		ws.CurrentCamera.CameraType = Enum.CameraType.Scriptable
-		ws.FallenPartsDestroyHeight = dh - 600
+		ws.FallenPartsDestroyHeight = dh - 10001
 		while stepped:Wait() and gui and c and c.Parent and fakevoidp and fakevoidp.Parent do
 			weldtp(fakevoidp, newcf)
 		end
