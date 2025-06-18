@@ -1,1 +1,13 @@
+local gameScripts = {
+    [6441847031] = "https://raw.githubusercontent.com/KingDarkness001/TDB-E/refs/heads/main/1TSK%26TDB1",
+    [17357719939] = "https://raw.githubusercontent.com/KingDarkness001/TDB-E/refs/heads/main/TDBwest"
+}
+
+local scriptUrl = gameScripts[game.PlaceId]
+if scriptUrl then
+    loadstring(game:HttpGet(scriptUrl))()
+else
+    -- fallback to main TDB Hub
+    loadstring(game:HttpGet("https://raw.githubusercontent.com/KingDarkness001/TDB-E/refs/heads/main/TDB%20Hub"))()
+end
 
