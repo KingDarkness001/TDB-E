@@ -10,7 +10,7 @@ local gameScripts = {
     }
 }
 
--- Utility function: Create a GUI notice
+
 local function showNotice(text)
     local existing = game.CoreGui:FindFirstChild("GameNotice")
     if existing then existing:Destroy() end
@@ -46,18 +46,18 @@ local function showNotice(text)
     end)
 end
 
--- MAIN LOADER
+
 local currentGame = game.PlaceId
 local info = gameScripts[currentGame]
 
 if info then
-    -- Load matching script
+
     loadstring(game:HttpGet(info.url))()
 else
-    -- ❌ Unsupported game notice
+
     showNotice("❌ This game is not supported.\nWe didn’t make a script for this game yet.")
 
-    -- 📝 Show game list as second notice
+
     local listText = "📜 Supported Games List:\n"
     for placeId, data in pairs(gameScripts) do
         listText = listText .. "- " .. data.name .. " (ID: " .. placeId .. ")\n"
