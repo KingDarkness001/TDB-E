@@ -1,42 +1,68 @@
--- Game-specific script mapping
+-- Game-specific script mapping (Name + PlaceId)
 local gameScripts = {
-    [6441847031] = "https://raw.githubusercontent.com/KingDarkness001/TDB-E/refs/heads/main/1TSK%26TDB1",
-    [17357719939] = "https://raw.githubusercontent.com/KingDarkness001/TDB-E/refs/heads/main/TDBwest"
+    [6441847031] = {
+        url = "https://raw.githubusercontent.com/KingDarkness001/TDB-E/refs/heads/main/1TSK%26TDB1",
+        name = "Chaos"
+    },
+    [17357719939] = {
+        url = "https://raw.githubusercontent.com/KingDarkness001/TDB-E/refs/heads/main/TDBwest",
+        name = "Wizard West"
+    }
 }
 
-local scriptUrl = gameScripts[game.PlaceId]
+-- Utility function: Create a GUI notice
+local function showNotice(text)
+    local existing = game.CoreGui:FindFirstChild("GameNotice")
+    if existing then existing:Destroy() end
 
-if scriptUrl then
-    -- Run the correct script
-    loadstring(game:HttpGet(scriptUrl))()
-else
-    -- Show notification: game not supported
-    if game.CoreGui:FindFirstChild("UnsupportedGameNotice") then
-        game.CoreGui.UnsupportedGameNotice:Destroy()
-    end
+    local gui = Instance.new("ScreenGui")
+    gui.Name = "GameNotice"
+    gui.ResetOnSpawn = false
+    gui.Parent = game:GetService("CoreGui")
 
-    local message = Instance.new("ScreenGui", game.CoreGui)
-    message.Name = "UnsupportedGameNotice"
-
-    local frame = Instance.new("Frame", message)
-    frame.Size = UDim2.new(0, 400, 0, 100)
-    frame.Position = UDim2.new(0.5, -200, 0.2, 0)
-    frame.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
+    local frame = Instance.new("Frame")
+    frame.Size = UDim2.new(0, 420, 0, 140)
+    frame.Position = UDim2.new(0.5, -210, 0.15, 0)
+    frame.BackgroundColor3 = Color3.fromRGB(25, 25, 25)
     frame.BorderSizePixel = 0
+    frame.Parent = gui
     frame.BackgroundTransparency = 0.2
+    frame.ClipsDescendants = true
+    frame.Name = "NoticeFrame"
 
-    local text = Instance.new("TextLabel", frame)
-    text.Size = UDim2.new(1, 0, 1, 0)
-    text.BackgroundTransparency = 1
-    text.Text = "❌ This game is not supported.\nWe didn’t make a script for this game yet."
-    text.TextColor3 = Color3.fromRGB(255, 85, 85)
-    text.TextScaled = true
-    text.Font = Enum.Font.GothamBold
+    local label = Instance.new("TextLabel")
+    label.Size = UDim2.new(1, -20, 1, -20)
+    label.Position = UDim2.new(0, 10, 0, 10)
+    label.BackgroundTransparency = 1
+    label.TextColor3 = Color3.fromRGB(255, 255, 255)
+    label.Text = text
+    label.TextScaled = true
+    label.TextWrapped = true
+    label.Font = Enum.Font.GothamBold
+    label.Parent = frame
 
-    -- Optional: Auto-remove the notice after 5 seconds
-    task.delay(5, function()
-        if message then
-            message:Destroy()
-        end
+    task.delay(8, function()
+        if gui then gui:Destroy() end
+    end)
+end
+
+-- MAIN LOADER
+local currentGame = game.PlaceId
+local info = gameScripts[currentGame]
+
+if info then
+    -- Load matching script
+    loadstring(game:HttpGet(info.url))()
+else
+    -- ❌ Unsupported game notice
+    showNotice("❌ This game is not supported.\nWe didn’t make a script for this game yet.")
+
+    -- 📝 Show game list as second notice
+    local listText = "📜 Supported Games List:\n"
+    for placeId, data in pairs(gameScripts) do
+        listText = listText .. "- " .. data.name .. " (ID: " .. placeId .. ")\n"
+    end
+    task.delay(4.5, function() -- show after the first fades
+        showNotice(listText)
     end)
 end
