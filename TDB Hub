@@ -1,13 +1,42 @@
+-- Game-specific script mapping
 local gameScripts = {
     [6441847031] = "https://raw.githubusercontent.com/KingDarkness001/TDB-E/refs/heads/main/1TSK%26TDB1",
     [17357719939] = "https://raw.githubusercontent.com/KingDarkness001/TDB-E/refs/heads/main/TDBwest"
 }
 
 local scriptUrl = gameScripts[game.PlaceId]
+
 if scriptUrl then
+    -- Run the correct script
     loadstring(game:HttpGet(scriptUrl))()
 else
-    -- fallback to main TDB Hub
-    loadstring(game:HttpGet("https://raw.githubusercontent.com/KingDarkness001/TDB-E/refs/heads/main/TDB%20Hub"))()
-end
+    -- Show notification: game not supported
+    if game.CoreGui:FindFirstChild("UnsupportedGameNotice") then
+        game.CoreGui.UnsupportedGameNotice:Destroy()
+    end
 
+    local message = Instance.new("ScreenGui", game.CoreGui)
+    message.Name = "UnsupportedGameNotice"
+
+    local frame = Instance.new("Frame", message)
+    frame.Size = UDim2.new(0, 400, 0, 100)
+    frame.Position = UDim2.new(0.5, -200, 0.2, 0)
+    frame.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
+    frame.BorderSizePixel = 0
+    frame.BackgroundTransparency = 0.2
+
+    local text = Instance.new("TextLabel", frame)
+    text.Size = UDim2.new(1, 0, 1, 0)
+    text.BackgroundTransparency = 1
+    text.Text = "❌ This game is not supported.\nWe didn’t make a script for this game yet."
+    text.TextColor3 = Color3.fromRGB(255, 85, 85)
+    text.TextScaled = true
+    text.Font = Enum.Font.GothamBold
+
+    -- Optional: Auto-remove the notice after 5 seconds
+    task.delay(5, function()
+        if message then
+            message:Destroy()
+        end
+    end)
+end
