@@ -1,0 +1,251 @@
+-- Wizard West AutoFarm Script Hub (Executor Version)
+
+local Players = game:GetService("Players")
+local RunService = game:GetService("RunService")
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local TweenService = game:GetService("TweenService")
+local UserInputService = game:GetService("UserInputService")
+
+local player = Players.LocalPlayer
+
+-- Wait for PlayerGui
+local function waitForPlayerGui()
+    while not player:FindFirstChild("PlayerGui") do task.wait() end
+    return player.PlayerGui
+end
+
+local playerGui = waitForPlayerGui()
+
+-- Character Ready
+local function waitForCharacterReady()
+    if not player.Character or not player.Character:FindFirstChild("HumanoidRootPart") then
+        player.CharacterAdded:Wait()
+        repeat task.wait() until player.Character:FindFirstChild("HumanoidRootPart")
+    end
+    return player.Character
+end
+
+local character = waitForCharacterReady()
+
+-- Remote Events
+local remotesFolder = ReplicatedStorage:WaitForChild("Remotes", 10)
+local attackRemote = remotesFolder and remotesFolder:FindFirstChild("Attack")
+local healRemote = remotesFolder and remotesFolder:FindFirstChild("Heal")
+local coinRemote = remotesFolder and remotesFolder:FindFirstChild("CollectCoin")
+
+-- Config
+local attackCooldown = 0.5
+local attackRange = 5
+local healThreshold = 30
+local coinCollectRange = 20
+local autoFarmEnabled = false
+local autoHealEnabled = true
+local lastAttackTime = 0
+
+-- GUI
+local screenGui = Instance.new("ScreenGui", playerGui)
+screenGui.Name = "WizardWestScriptHub"
+screenGui.ResetOnSpawn = false
+
+local function addUICorner(parent, radius)
+    local corner = Instance.new("UICorner")
+    corner.CornerRadius = UDim.new(0, radius)
+    corner.Parent = parent
+end
+
+local mainFrame = Instance.new("Frame", screenGui)
+mainFrame.Size = UDim2.new(0, 350, 0, 280)
+mainFrame.Position = UDim2.new(0, 100, 0, 100)
+mainFrame.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
+mainFrame.BorderSizePixel = 0
+mainFrame.ClipsDescendants = true
+addUICorner(mainFrame, 12)
+
+local titleBar = Instance.new("Frame", mainFrame)
+titleBar.Size = UDim2.new(1, 0, 0, 36)
+titleBar.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
+addUICorner(titleBar, 12)
+
+local titleLabel = Instance.new("TextLabel", titleBar)
+titleLabel.Size = UDim2.new(1, -40, 1, 0)
+titleLabel.Position = UDim2.new(0, 15, 0, 0)
+titleLabel.BackgroundTransparency = 1
+titleLabel.Text = "Wizard West Script Hub"
+titleLabel.TextColor3 = Color3.fromRGB(220, 220, 220)
+titleLabel.Font = Enum.Font.GothamBold
+titleLabel.TextSize = 18
+titleLabel.TextXAlignment = Enum.TextXAlignment.Left
+
+local closeBtn = Instance.new("TextButton", titleBar)
+closeBtn.Size = UDim2.new(0, 30, 0, 30)
+closeBtn.Position = UDim2.new(1, -35, 0, 3)
+closeBtn.BackgroundColor3 = Color3.fromRGB(150, 50, 50)
+closeBtn.Text = "X"
+closeBtn.TextColor3 = Color3.new(1,1,1)
+closeBtn.Font = Enum.Font.GothamBold
+closeBtn.TextSize = 20
+closeBtn.AutoButtonColor = false
+addUICorner(closeBtn, 6)
+
+closeBtn.MouseEnter:Connect(function()
+    closeBtn.BackgroundColor3 = Color3.fromRGB(200, 70, 70)
+end)
+closeBtn.MouseLeave:Connect(function()
+    closeBtn.BackgroundColor3 = Color3.fromRGB(150, 50, 50)
+end)
+closeBtn.MouseButton1Click:Connect(function()
+    screenGui:Destroy()
+end)
+
+-- Draggable
+local dragging, dragInput, dragStart, startPos
+titleBar.InputBegan:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.MouseButton1 then
+        dragging = true
+        dragStart = input.Position
+        startPos = mainFrame.Position
+        input.Changed:Connect(function()
+            if input.UserInputState == Enum.UserInputState.End then
+                dragging = false
+            end
+        end)
+    end
+end)\ntitleBar.InputChanged:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.MouseMovement then
+        dragInput = input
+    end
+end)
+UserInputService.InputChanged:Connect(function(input)
+    if dragging and input == dragInput then
+        local delta = input.Position - dragStart
+        mainFrame.Position = UDim2.new(
+            startPos.X.Scale,
+            startPos.X.Offset + delta.X,
+            startPos.Y.Scale,
+            startPos.Y.Offset + delta.Y
+        )
+    end
+end)
+
+-- Content Frame
+local contentFrame = Instance.new("Frame", mainFrame)
+contentFrame.Size = UDim2.new(1, -20, 1, -50)
+contentFrame.Position = UDim2.new(0, 10, 0, 40)
+contentFrame.BackgroundColor3 = Color3.fromRGB(35, 35, 35)
+addUICorner(contentFrame, 12)
+
+local function createButton(text, posY)
+    local btn = Instance.new("TextButton", contentFrame)
+    btn.Size = UDim2.new(0, 300, 0, 40)
+    btn.Position = UDim2.new(0, 20, 0, posY)
+    btn.BackgroundColor3 = Color3.fromRGB(58, 58, 58)
+    btn.TextColor3 = Color3.new(1,1,1)
+    btn.Font = Enum.Font.GothamBold
+    btn.TextSize = 18
+    btn.Text = text
+    addUICorner(btn, 8)
+    return btn
+end
+
+local autoFarmBtn = createButton("AutoFarm: OFF", 10)
+local autoHealBtn = createButton("AutoHeal: ON", 60)
+local statusLabel = Instance.new("TextLabel", contentFrame)
+statusLabel.Size = UDim2.new(1, -40, 0, 30)
+statusLabel.Position = UDim2.new(0, 20, 0, 110)
+statusLabel.BackgroundTransparency = 1
+statusLabel.TextColor3 = Color3.fromRGB(180, 180, 180)
+statusLabel.Font = Enum.Font.Gotham
+statusLabel.TextSize = 16
+statusLabel.TextXAlignment = Enum.TextXAlignment.Left
+statusLabel.Text = "Status: Idle"
+
+autoFarmBtn.MouseButton1Click:Connect(function()
+    autoFarmEnabled = not autoFarmEnabled
+    autoFarmBtn.Text = "AutoFarm: " .. (autoFarmEnabled and "ON" or "OFF")
+    statusLabel.Text = "Status: " .. (autoFarmEnabled and "Running" or "Idle")
+end)
+
+autoHealBtn.MouseButton1Click:Connect(function()
+    autoHealEnabled = not autoHealEnabled
+    autoHealBtn.Text = "AutoHeal: " .. (autoHealEnabled and "ON" or "OFF")
+end)
+
+-- Helpers
+local function findNearestNPC()
+    local char = player.Character
+    local hrp = char and char:FindFirstChild("HumanoidRootPart")
+    if not hrp then return end
+    local nearest, minDist = nil, math.huge
+    for _, m in ipairs(workspace:GetChildren()) do
+        local h = m:FindFirstChildOfClass("Humanoid")
+        local p = m:FindFirstChild("HumanoidRootPart")
+        if h and p and h.Health > 0 and m:FindFirstChild("Enemy") then
+            local d = (hrp.Position - p.Position).Magnitude
+            if d < minDist then minDist = d; nearest = m end
+        end
+    end
+    return nearest
+end
+
+local function tryHeal()
+    if not autoHealEnabled then return end
+    local h = player.Character and player.Character:FindFirstChildOfClass("Humanoid")
+    if h and h.Health < healThreshold and healRemote then
+        pcall(function() healRemote:FireServer() end)
+        statusLabel.Text = "Status: Healing..."
+    end
+end
+
+local function collectCoins()
+    local hrp = player.Character and player.Character:FindFirstChild("HumanoidRootPart")
+    if not hrp or not coinRemote then return end
+    for _, c in ipairs(workspace:GetChildren()) do
+        if c:IsA("BasePart") and c.Name == "Coin" then
+            if (hrp.Position - c.Position).Magnitude <= coinCollectRange then
+                pcall(function() coinRemote:FireServer(c) end)
+            end
+        end
+    end
+end
+
+-- AutoFarm Loop
+RunService.Heartbeat:Connect(function()
+    if not autoFarmEnabled then return end
+    local char = player.Character
+    if not char or not char:FindFirstChild("HumanoidRootPart") then return end
+    local hrp = char.HumanoidRootPart
+    local hum = char:FindFirstChildOfClass("Humanoid")
+    if not hum then return end
+
+    tryHeal()
+    collectCoins()
+
+    local target = findNearestNPC()
+    if target then
+        local tHRP = target:FindFirstChild("HumanoidRootPart")
+        local tHum = target:FindFirstChildOfClass("Humanoid")
+        if tHRP and tHum and tHum.Health > 0 then
+            if (hrp.Position - tHRP.Position).Magnitude > attackRange then
+                hum:MoveTo(tHRP.Position + Vector3.new(0, 0, -2))
+            else
+                hum:MoveTo(hrp.Position)
+            end
+            if tick() - lastAttackTime >= attackCooldown then
+                pcall(function()
+                    attackRemote:FireServer(tHRP.Position, target)
+                end)
+                lastAttackTime = tick()
+                statusLabel.Text = "Status: Attacking NPC"
+            end
+        end
+    else
+        statusLabel.Text = "Status: No NPCs found"
+    end
+end)
+
+-- Anti-AFK
+local vu = game:GetService("VirtualUser")
+Players.LocalPlayer.Idled:Connect(function()
+    vu:CaptureController()
+    vu:ClickButton2(Vector2.new())
+end)
