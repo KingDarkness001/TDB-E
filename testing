@@ -44,6 +44,8 @@ local lastAttackTime = 0
 local screenGui = Instance.new("ScreenGui")
 screenGui.Name = "WizardWestScriptHub"
 screenGui.ResetOnSpawn = false
+screenGui.IgnoreGuiInset = true
+screenGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
 screenGui.Parent = playerGui
 
 local function addUICorner(parent, radius)
@@ -53,12 +55,11 @@ local function addUICorner(parent, radius)
 end
 
 local mainFrame = Instance.new("Frame")
-mainFrame.Size = UDim2.new(0, 350, 0, 280)
-mainFrame.Position = UDim2.new(0, 100, 0, 100)
+mainFrame.Size = UDim2.new(0, 350, 0, 220)
+mainFrame.Position = UDim2.new(0.5, -175, 0.5, -110)
 mainFrame.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
 mainFrame.BorderSizePixel = 0
 mainFrame.Parent = screenGui
-mainFrame.ClipsDescendants = true
 addUICorner(mainFrame, 12)
 
 local titleBar = Instance.new("Frame")
@@ -91,25 +92,18 @@ closeBtn.Parent = titleBar
 addUICorner(closeBtn, 6)
 
 closeBtn.MouseButton1Click:Connect(function()
-    screenGui:Destroy()
+    screenGui.Enabled = false
 end)
 
-local contentFrame = Instance.new("Frame")
-contentFrame.Size = UDim2.new(1, 0, 1, -36)
-contentFrame.Position = UDim2.new(0, 0, 0, 36)
-contentFrame.BackgroundColor3 = Color3.fromRGB(35, 35, 35)
-contentFrame.Parent = mainFrame
-addUICorner(contentFrame, 12)
-
 local autoFarmToggleBtn = Instance.new("TextButton")
-autoFarmToggleBtn.Size = UDim2.new(0, 200, 0, 50)
-autoFarmToggleBtn.Position = UDim2.new(0, 75, 0, 30)
+autoFarmToggleBtn.Size = UDim2.new(0, 200, 0, 40)
+autoFarmToggleBtn.Position = UDim2.new(0.5, -100, 0, 60)
 autoFarmToggleBtn.BackgroundColor3 = Color3.fromRGB(58, 58, 58)
 autoFarmToggleBtn.TextColor3 = Color3.new(1, 1, 1)
 autoFarmToggleBtn.Font = Enum.Font.GothamBold
-autoFarmToggleBtn.TextSize = 20
+autoFarmToggleBtn.TextSize = 18
 autoFarmToggleBtn.Text = "AutoFarm: OFF"
-autoFarmToggleBtn.Parent = contentFrame
+autoFarmToggleBtn.Parent = mainFrame
 addUICorner(autoFarmToggleBtn, 8)
 
 autoFarmToggleBtn.MouseButton1Click:Connect(function()
@@ -118,14 +112,14 @@ autoFarmToggleBtn.MouseButton1Click:Connect(function()
 end)
 
 local autoHealToggleBtn = Instance.new("TextButton")
-autoHealToggleBtn.Size = UDim2.new(0, 200, 0, 50)
-autoHealToggleBtn.Position = UDim2.new(0, 75, 0, 100)
+autoHealToggleBtn.Size = UDim2.new(0, 200, 0, 40)
+autoHealToggleBtn.Position = UDim2.new(0.5, -100, 0, 110)
 autoHealToggleBtn.BackgroundColor3 = Color3.fromRGB(58, 58, 58)
 autoHealToggleBtn.TextColor3 = Color3.new(1, 1, 1)
 autoHealToggleBtn.Font = Enum.Font.GothamBold
-autoHealToggleBtn.TextSize = 20
+autoHealToggleBtn.TextSize = 18
 autoHealToggleBtn.Text = "AutoHeal: ON"
-autoHealToggleBtn.Parent = contentFrame
+autoHealToggleBtn.Parent = mainFrame
 addUICorner(autoHealToggleBtn, 8)
 
 autoHealToggleBtn.MouseButton1Click:Connect(function()
@@ -202,7 +196,6 @@ RunService.Heartbeat:Connect(function()
     end
 end)
 
--- Anti-AFK
 local VirtualUser = game:FindService("VirtualUser")
 Players.LocalPlayer.Idled:Connect(function()
     VirtualUser:CaptureController()
